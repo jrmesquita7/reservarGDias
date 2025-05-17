@@ -1,0 +1,106 @@
+
+
+CREATE TABLE `grupos` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nome` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+
+CREATE TABLE `horarios` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `descricao` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+
+CREATE TABLE `itens` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nome` varchar(100) NOT NULL,
+  `tipo` enum('Laboratório','Datashow','TV') NOT NULL,
+  `localizacao` varchar(100) DEFAULT NULL,
+  `status` enum('Disponível','Reservado','Em manutenção') DEFAULT 'Disponível',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+CREATE TABLE `laboratorios` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nome` varchar(100) NOT NULL,
+  `descricao` text DEFAULT NULL,
+  `status` enum('Disponível','Indisponível') DEFAULT 'Disponível',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+CREATE TABLE `usuarios` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nome` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `senha` varchar(255) NOT NULL,
+  `grupo` varchar(50) DEFAULT 'Usuario',
+  `id_grupo` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`),
+  KEY `fk_usuarios_grupo` (`id_grupo`),
+  CONSTRAINT `fk_usuarios_grupo` FOREIGN KEY (`id_grupo`) REFERENCES `grupos` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+CREATE TABLE `logs_entrega` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_usuario` int(11) NOT NULL,
+  `tipo` enum('equipamento','laboratorio') NOT NULL,
+  `id_item` int(11) DEFAULT NULL,
+  `data_hora` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `id_usuario` (`id_usuario`),
+  CONSTRAINT `logs_entrega_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+CREATE TABLE `reservas` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_usuario` int(11) NOT NULL,
+  `id_item` int(11) NOT NULL,
+  `id_horario` int(11) NOT NULL,
+  `data` date NOT NULL,
+  `status` enum('Agendada','Concluída','Cancelada') DEFAULT 'Agendada',
+  `observacoes` text DEFAULT NULL,
+  `concluida` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unica_reserva` (`id_item`,`id_horario`,`data`),
+  KEY `id_usuario` (`id_usuario`),
+  KEY `id_horario` (`id_horario`),
+  CONSTRAINT `reservas_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`),
+  CONSTRAINT `reservas_ibfk_2` FOREIGN KEY (`id_item`) REFERENCES `itens` (`id`),
+  CONSTRAINT `reservas_ibfk_3` FOREIGN KEY (`id_horario`) REFERENCES `horarios` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=528 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+CREATE TABLE `reservas_laboratorios` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_usuario` int(11) NOT NULL,
+  `id_laboratorio` int(11) NOT NULL,
+  `id_horario` int(11) NOT NULL,
+  `data` date NOT NULL,
+  `observacoes` text DEFAULT NULL,
+  `criado_em` timestamp NULL DEFAULT current_timestamp(),
+  `concluida` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `id_usuario` (`id_usuario`),
+  KEY `id_laboratorio` (`id_laboratorio`),
+  KEY `id_horario` (`id_horario`),
+  CONSTRAINT `reservas_laboratorios_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`),
+  CONSTRAINT `reservas_laboratorios_ibfk_2` FOREIGN KEY (`id_laboratorio`) REFERENCES `laboratorios` (`id`),
+  CONSTRAINT `reservas_laboratorios_ibfk_3` FOREIGN KEY (`id_horario`) REFERENCES `horarios` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=145 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
